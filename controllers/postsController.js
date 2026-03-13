@@ -8,6 +8,7 @@ const index = (req, res) => {
     res.json({
         success: true,
         result: results});
+        console.log(results);
    })
     
 };
@@ -63,23 +64,25 @@ const modify = (req, res) => {
     res.send(`il post ${req.params.id} è stato modificato parzialmente`);
 };
 const destroy = (req, res) => {
-    // res.send(`il post ${req.params.id} è stato eliminato`);
     const id = parseInt(req.params.id);
-    const newPostsList = posts.filter((post) => post.id != id);
-    console.log(newPostsList);
-    const deletedPost = posts.filter((post) => post.id === id);
+    const sql = 'DELETE FROM posts WHERE id = ?';
 
-    deletedPost.length > 0? 
-    res.status(204): 
-    res.status(404).json(
-        {
+    connection.query(sql,[id], (err, results) => {
+        if (err) return res.status(500).json({
+                success: false,
+                message: "Errore interno del server operazione fallita"
+            });
+
+        if (results.affectedRows === 0) return res.status(404).json({
             success: false,
-            message: "il post che si vuole eliminare non esiste"
-        }
-    );
-    
-    
+            message: 'il post che si vuole eliminare non esiste'
+        });
 
+        res.status(204).json({
+            success: true,
+            message: 'il post è stato eliminato'
+        });
+    })
 };
 
 module.exports = {index, show, store, update, modify, destroy};
