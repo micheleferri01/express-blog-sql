@@ -4,7 +4,7 @@ const index = (req, res) => {
    const sql = 'SELECT * FROM posts'
 
    connection.query(sql, (err, results) => {
-    if (err) return res.status(500).json({success: false, error: 'Database query failed'});
+       if (err) return res.status(500).json({ success: false, error: 'Errore interno del database operazione fallita'});
     res.json({
         success: true,
         result: results});
@@ -15,14 +15,27 @@ const index = (req, res) => {
 
 const show = (req, res) => {
     const id = parseInt(req.params.id);
-    // res.send(`Visualizzato post ${req.params.id}`);
-    const post = posts.filter((post) => post.id === id);
+    
+    const sql = 'SELECT * FROM posts WHERE id = ?';
 
-    post.length != 0 ? res.json(post) : res.status(404).json(
-        { 
-        success: false,
-        message: "Post non trovato."
-    });
+    connection.query(sql, [id], (err, results) => {
+        if (err) return res.status(500).json({
+            success: false,
+            message: 'Errore interno del database operazione fallita'
+        });
+
+        if (results.length === 0) return res.status(404).json({
+            success: false,
+            message: "Post non trovato." 
+        });
+
+        res.json({
+            success: true,
+            result: results
+        })
+
+        console.log(results.affectedRows);
+    })
 
 
 };
@@ -70,7 +83,7 @@ const destroy = (req, res) => {
     connection.query(sql,[id], (err, results) => {
         if (err) return res.status(500).json({
                 success: false,
-                message: "Errore interno del server operazione fallita"
+                message: 'Errore interno del database operazione fallita'
             });
 
         if (results.affectedRows === 0) return res.status(404).json({
