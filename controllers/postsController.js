@@ -1,25 +1,17 @@
-// console.log(posts);
+const connection = require('../db/connection');
 
 const index = (req, res) => {
-    let postsCopy = [...posts];
-    const searchFilter = req.query.search;
-    if(searchFilter) {
-        postsCopy = postsCopy.filter((post) => {
-            const normalizedFilter = searchFilter.toLowerCase().trim();
-            for (const tag of post.tags) {
-                const normalizedtag = tag.toLowerCase().trim();
-                if(normalizedtag.includes(normalizedFilter)) return true;
-            }
-            return false;
-        })
-    }
-    res.json(
-        {
-            success: true,
-            result: postsCopy
-        }
-    );
+   const sql = 'SELECT * FROM posts'
+
+   connection.query(sql, (err, results) => {
+    if (err) return res.status(500).json({success: false, error: 'Database query failed'});
+    res.json({
+        success: true,
+        result: results});
+   })
+    
 };
+
 const show = (req, res) => {
     const id = parseInt(req.params.id);
     // res.send(`Visualizzato post ${req.params.id}`);
