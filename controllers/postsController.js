@@ -15,7 +15,7 @@ const index = (req, res) => {
 
 const show = (req, res) => {
     const id = parseInt(req.params.id);
-    
+
     const sql = 'SELECT * FROM posts WHERE id = ?';
 
     connection.query(sql, [id], (err, results) => {
@@ -29,12 +29,27 @@ const show = (req, res) => {
             message: "Post non trovato." 
         });
 
-        res.json({
-            success: true,
-            result: results
-        })
+        const tagsSql = 'SELECT tags.* FROM tags INNER JOIN post_tag ON tags.id = post_tag.tag_id WHERE post_tag.post_id = ?';
 
-        console.log(results.affectedRows);
+        connection.query(tagsSql, [id], (err, tagsResults) => {
+            if (err) return res.status(500).json({
+                success: false,
+                message: 'Errore interno del database operazione fallita'
+            });
+
+            if (tagsResults.length === 0) return res.status(404).json({
+                success: false,
+                message: "Tags non trovati."
+            });
+
+            res.json({
+                success: true,
+                result: results,
+                tags: tagsResults
+            })
+
+        });
+
     })
 
 
